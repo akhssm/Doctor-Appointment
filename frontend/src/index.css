@@ -2,12 +2,17 @@
 
 @theme {
   --color-primary: #5f6fff;
+
+  /* CORRECT variable name */
+  --grid-template-columns-auto: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-.active hr{
-  @apply block
+/* Active NavLink underline */
+.active hr {
+  @apply block;
 }
 
-::-webkit-scrollbar{
-  @apply hidden
+/* Hide scrollbar (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  @apply hidden;
 }
