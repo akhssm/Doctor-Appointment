@@ -7,6 +7,7 @@ const Appointment = () => {
 
   const {docId} = useParams()
   const {doctors, currencySymbol} = useContext(AppContext)
+  const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
   const [docInfo, setDocInfo] = useState(null)
   const [docSlots, setDocSlots] = useState([])
@@ -27,15 +28,15 @@ const Appointment = () => {
     for(let i = 0; i < 7; i++){
       // getting date with index
       let currentDate = new Date(today)
-      currentDate.setDate(today.getDate()+i)
+      currentDate.setDate(today.getDate() + i)
 
       // setting end time of the date with index
       let endTime = new Date()
-      endTime.setDate(today.getDate+1)
+      endTime.setDate(today.getDate() + i)
       endTime.setHours(21, 0, 0, 0)
 
       // setting hours
-      if (today.getDate === currentDate.getDate()) {
+      if (today.getDate() === currentDate.getDate()) {
         currentDate.setHours(currentDate.getHours() > 10 ? currentDate.getHours() + 1 : 10)
         currentDate.setMinutes(currentDate.getMinutes() > 30 ? 30 : 0)
       } else {
@@ -46,7 +47,7 @@ const Appointment = () => {
       let timeSlots = []
 
       while(currentDate < endTime) {
-        let formattedTime = currentDate.toLocaleDateString([], { hour: '2-digit', minute: '2-digit' })
+        let formattedTime = currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})
 
         // add slot to array
         timeSlots.push({
@@ -104,6 +105,28 @@ const Appointment = () => {
           <p className='text-gray-500 font-medium mt-4'>
             Appointment fee: <span className='text-gray-600'>{currencySymbol}{docInfo.fees}</span>
           </p>
+        </div>
+      </div>
+
+      {/* ---------- Booking Slots ---------- */}
+      <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
+        <p>Booking Slots</p>
+        <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
+          {
+            docSlots.length && docSlots.map((item, index) => (
+              <div onClick={()=> setSlotIndex(index)} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white': 'border border-gray-200'}`} key={index}>
+                <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
+                <p>{item[0] && item[0].datetime.getDate()}</p>
+              </div>
+            ))
+          }
+        </div>
+        <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
+          {docSlots.length && docSlots[slotIndex].map((item, index) => (
+            <p onClick={()=>setSlotTime(item.time)} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`} key={index}>
+              {item.time.toLowerCase()}
+            </p>
+          ))}
         </div>
       </div>
     </div>
