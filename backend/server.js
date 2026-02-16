@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
+import adminRouter from "./routes/adminRoute.js";
 
 
 // app config
@@ -20,13 +21,8 @@ app.get("/", (req, res) => {
   res.send("Backend is running successfully 🚀");
 });
 
-// // Connect MongoDB
-// mongoose.connect(process.env.MONGO_URI)
-//   .then(() => console.log("MongoDB Connected ✅"))
-//   .catch((err) => console.log("MongoDB Error:", err));
-
-// // Start Server
-// const PORT = process.env.PORT || 5000;
+// Routes
+app.use("/api/admin", adminRouter);
 
 app.listen(Port, () => {
   console.log(`Server running on port ${Port}`);
