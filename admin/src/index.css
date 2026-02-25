@@ -1,5 +1,4 @@
-@import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap');
+/* @import "tailwindcss";
 
 @theme {
   --color-primary: #5F6FFF;
@@ -11,4 +10,19 @@
 
 *{
   font-family: Outfit;
+} */
+
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #5F6FFF;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  font-family: 'Outfit', sans-serif;
 }
