@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken'
 import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from '../models/doctorModel.js'
 import appointmentModel from '../models/appointmentModel.js'
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -230,4 +233,77 @@ const cancelAppointment = async (req, res) => {
     }
 }
 
-export {registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment}
+// API to create Stripe Checkout session
+const stripePayment = async (req, res) => {
+    try {
+
+        const { appointmentId } = req.body;
+        const userId = req.userId;
+
+        const appointmentData = await appointmentModel.findById(appointmentId);
+
+        if (!appointmentData || appointmentData.cancelled) {
+            return res.json({ success: false, message: "Invalid Appointment" });
+        }
+
+        if (appointmentData.payment) {
+            return res.json({ success: false, message: "Already Paid" });
+        }
+
+        // Create Stripe Checkout Session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: [
+                {
+                    price_data: {
+                        currency: "inr",
+                        product_data: {
+                            name: "Doctor Appointment Fees",
+                        },
+                        unit_amount: appointmentData.amount * 100, // convert to paise
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: "payment",
+            success_url: `http://localhost:5173/my-appointments?success=true&appointmentId=${appointmentId}`,
+            cancel_url: `http://localhost:5173/my-appointments?success=false`,
+            metadata: {
+                appointmentId: appointmentId,
+                userId: userId
+            }
+        });
+
+        res.json({ success: true, url: session.url });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to verify payment
+const verifyStripe = async (req, res) => {
+    try {
+
+        const { appointmentId } = req.body;
+
+        const appointmentData = await appointmentModel.findById(appointmentId);
+
+        if (!appointmentData) {
+            return res.json({ success: false, message: "Appointment not found" });
+        }
+
+        await appointmentModel.findByIdAndUpdate(appointmentId, {
+            payment: true
+        });
+
+        res.json({ success: true, message: "Payment Successful" });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export {registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, stripePayment, verifyStripe}
